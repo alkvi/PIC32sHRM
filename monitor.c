@@ -7,10 +7,14 @@ Latest update 2017-11-18
 
 #include <stdint.h>   /* Declarations of uint_32 and the like */
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
+#include <math.h>
 #include "projecthead.h"  /* function declarations! */
 
 int testval = 0;
 int rawVal = 0;
+float testval2 = 0;
+float testsin = 0;
+
 
 //Interrupt services
 void user_isr( void ) {
@@ -40,9 +44,16 @@ int readPin(char pin){
 
 void monitor(void) {
 
-	char * rawConv = itoaconv(rawVal);
+	/*char * rawConv = itoaconv(rawVal);
 	display_string(1, rawConv);
-	display_update();
+	display_update();*/
+	
+	/*testsin = 500 + sin(testval2)*500;
+	testsin = round(testsin);
+	draw_voltage(0,(int)testsin);
+	testval2 += 0.07;*/
+
+	draw_voltage(0,rawVal);
 
 }
 

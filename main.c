@@ -10,6 +10,7 @@
 
 #include <stdint.h>   /* Declarations of uint_32 and the like */
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
+#include <string.h>
 #include "projecthead.h"  /* function declarations! */
 
 
@@ -56,14 +57,9 @@ int main(void) {
 	SPI2CONSET = 0x8000;
 	
 	display_init();
-	display_string(0, "rad 0");
-	display_string(1, "rad 1");
-	display_string(2, "rad 2");
-	display_string(3, "rad 3");
+	//display_string(0, "rad 0");
 	display_update();
-	
-	display_image(96, icon);
-	
+		
 	//initialize monitor things
 	asm("ei");
 	//setupADCManual();

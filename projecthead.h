@@ -1,9 +1,10 @@
-/* mipslab.h
-   Header file for all labs.
+/* projecthead.h
+   Header file for project
    This file written 2015 by F Lundevall
    Some parts are original code written by Axel Isaksson
+   Modified 2017 by akv
 
-   Latest update 2015-08-28 by F Lundevall
+   Latest update 2017-11-19 by akv
 
    For copyright and licensing, see file COPYING */
 
