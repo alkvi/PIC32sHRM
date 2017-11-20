@@ -10,10 +10,16 @@ Latest update 2017-11-18
 #include <math.h>
 #include "projecthead.h"  /* function declarations! */
 
-int testval = 0;
 int rawVal = 0;
-float testval2 = 0;
-float testsin = 0;
+int prevRaw = 0;
+int ewma = 0;
+int prevEwma = 0;
+double alpha = 0.05;
+float bpm = 0;
+int beats = 0;
+int timerCount = 0;
+
+int mode = 0;
 
 
 //Interrupt services
@@ -27,8 +33,60 @@ void user_isr( void ) {
 
   	//handle interrupt from timer 2
   	if ( (IFS(0) & 0x100) > 0 ){
+  		timerCount += 1;
 	    IFS(0) &= (0 << 8);
   	}
+
+  	//handle interrupt from button to switch modes
+
+}
+
+void initRate(void){
+	ewma = rawVal;
+	prevEwma = rawVal;
+	prevRaw = rawVal;
+}
+
+void setupTimer(void){
+	//clear TMR2
+  	TMR2 = 0;
+  	//set scaling to 256:1 (bits 4 to 6 on). 
+  	T2CON = 0x70;
+  	//set period to 6250 for 20 ms (with 80 MHz clock)
+  	PR2 = 6250;
+
+  	//clear interrupt flag (bit 8 in IFS0)
+  	IFS(0) &= (0 << 8);
+  	//set interrupt prios to highest (bits 2 3 4 in IPC2) (and IPC2 bits 0 and 1 for subprio)
+  	IPC(2) |= 0x1f;
+  	//enable timer 2 interrupt (bit 8 in IEC0)
+  	IEC(0) |= 0x100;
+}
+
+//calculate and update the EWMA
+void updateEWMA(void){
+	ewma = alpha*rawVal + (1-alpha)*prevEwma;
+}
+
+void calcRate(void){
+	updateEWMA();
+	if (rawVal > ewma && prevRaw < ewma){
+		beats += 1;
+		//start a timer
+		//turn T2 on (bit 15)
+  		T2CONSET = (1 << 15);
+	}
+	if (beats == 2){
+		beats = 0;
+		//end the timer and check value
+		T2CONCLR = (1 << 15);
+		TMR2 = 0;
+		bpm = 60 / (0.02 * (float)timerCount);
+		bpm = round(bpm);
+		timerCount = 0;
+	}
+	prevEwma = ewma;
+	prevRaw = rawVal;
 
 }
 
@@ -41,19 +99,23 @@ int readPin(char pin){
     return ADC1BUF0;                //get result
 }
 
-
-void monitor(void) {
-
-	/*char * rawConv = itoaconv(rawVal);
-	display_string(1, rawConv);
-	display_update();*/
+//draw the raw signal curve on screen
+void drawSignal(void){
 	
-	/*testsin = 500 + sin(testval2)*500;
-	testsin = round(testsin);
-	draw_voltage(0,(int)testsin);
-	testval2 += 0.07;*/
-
 	draw_voltage(0,rawVal);
+
+}
+
+//write the heart rate in BPM on screen
+void drawRate(void){
+
+	char * rawConv = itoaconv(rawVal);
+	display_string(0, rawConv);
+	char * ewmaConv = itoaconv(ewma);
+	display_string(1, ewmaConv);
+	char * bpmConv = itoaconv(bpm);
+	display_string(2, bpmConv);
+	display_update();
 
 }
 
@@ -77,6 +139,7 @@ void setupADCManual(void){
 void setupADCAuto(void){
 
 	AD1PCFGCLR = (1 << 4);	//set up A1 as analog, not digital
+	TRISBSET = (1 << 4);	//initialize Port B so that bit 4 is set (use A1 as analog input)
 
     AD1CON1CLR = 0x8000;    // make sure ADC is off before messing with it
 
@@ -103,6 +166,24 @@ void setupADCAuto(void){
     AD1CHS = 4 << 16;	//ADC1CHS
 
     AD1CON1SET = 0x8000; 	//turn ADC back on 
+
+}
+
+void monitorLoop(void){
+
+	  switch(mode) {
+      case 0 :
+      	calcRate();
+      	drawSignal();
+      	break;
+      case 1:
+      	calcRate();
+      	drawRate();
+      	break;
+      default :
+      	calcRate();
+        drawSignal();
+   }
 
 }
 

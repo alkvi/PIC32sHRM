@@ -65,28 +65,15 @@ int main(void) {
 	//setupADCManual();
 	setupADCAuto();
 
+	setupTimer();
 
-  	//clear TMR2
-  	TMR2 = 0;
-  	//set scaling to 256:1 (bits 4 to 6 on). 
-  	T2CON = 0x70;
-  	//set period to 31 250 for 100 ms (with 80 MHz clock)
-  	PR2 = 31250;
-
-  	//clear interrupt flag (bit 8 in IFS0)
-  	IFS(0) &= (0 << 8);
-  	//set interrupt prios to highest (bits 2 3 4 in IPC2) (and IPC2 bits 0 and 1 for subprio)
-  	IPC(2) |= 0x1f;
-  	//enable timer 2 interrupt (bit 8 in IEC0)
-  	IEC(0) |= 0x100;
-
-  	//turn T2 on (bit 15)
-  	//T2CON |= (1 << 15);
+  	quicksleep(100000);
+  	initRate();
 
 	while( 1 )
 	{
 		//do stuff
-		monitor();
+		monitorLoop();
 	}
 	return 0;
 }
