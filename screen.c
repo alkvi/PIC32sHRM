@@ -33,10 +33,12 @@ static void num32asc( char * s, int );
 #define DISPLAY_TURN_OFF_VDD (PORTFSET = 0x40)
 #define DISPLAY_TURN_OFF_VBAT (PORTFSET = 0x20)
 
-char monBuf0[128];
-char monBuf1[128];
-char monBuf2[128];
-char monBuf3[128];
+#define SIGAREA 128
+
+char monBuf0[SIGAREA];
+char monBuf1[SIGAREA];
+char monBuf2[SIGAREA];
+char monBuf3[SIGAREA];
 int bufPos = 0;
 
 //clear the whole screen by sending 0x0 and 0x10, plus spi 0 everything
@@ -105,17 +107,17 @@ void draw_voltage(int x, int val) {
     int yCoord = (1 << yPos);
     *(pointy+bufPos) = yCoord;
 		
-	for(j = 0; j < 128; j++)
+	for(j = 0; j < SIGAREA; j++)
 		spi_send_recv(*(pointy+j));
 
 	//go to next buffer position. if end of screen, reset to start of screen and clear
 	bufPos += 1;
-	if (bufPos > 127){
+	if (bufPos > SIGAREA-1){
 		bufPos = 0;
-		ZERO_ANY(char,monBuf0, 128);
-		ZERO_ANY(char,monBuf1, 128);
-		ZERO_ANY(char,monBuf2, 128);
-		ZERO_ANY(char,monBuf3, 128);
+		ZERO_ANY(char,monBuf0,SIGAREA);
+		ZERO_ANY(char,monBuf1,SIGAREA);
+		ZERO_ANY(char,monBuf2,SIGAREA);
+		ZERO_ANY(char,monBuf3,SIGAREA);
 		clearScreen();
 	}
 

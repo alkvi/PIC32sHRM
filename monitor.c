@@ -20,7 +20,7 @@ int beats = 0;
 int timerCount = 0;
 
 int mode = 0;
-
+int drawEwma = 0;
 
 //Interrupt services
 void user_isr( void ) {
@@ -34,11 +34,21 @@ void user_isr( void ) {
   	//handle interrupt from timer 2
   	if ( (IFS(0) & 0x100) > 0 ){
   		timerCount += 1;
-	    IFS(0) &= (0 << 8);
+	    IFSCLR(0) = (1 << 8);
   	}
 
-  	//handle interrupt from button to switch modes
+  	//handle interrupt from switches (now only sw4)
+  	if ( (IFS(0) & 0x80000) > 0 ){
+  		drawEwma = 1 - drawEwma;
+	    IFSCLR(0) = (1 << 19);
+  	}
 
+}
+
+//should really be on a very short timer to blink properly via one call
+void blinkLED(char leds){
+	PORTESET = leds;
+	PORTECLR = leds;
 }
 
 void initRate(void){
@@ -71,6 +81,7 @@ void updateEWMA(void){
 void calcRate(void){
 	updateEWMA();
 	if (rawVal > ewma && prevRaw < ewma){
+		blinkLED(0xff);
 		beats += 1;
 		//start a timer
 		//turn T2 on (bit 15)
@@ -103,6 +114,9 @@ int readPin(char pin){
 void drawSignal(void){
 	
 	draw_voltage(0,rawVal);
+	if (drawEwma){
+		draw_voltage(0,ewma);
+	}
 
 }
 
@@ -169,22 +183,82 @@ void setupADCAuto(void){
 
 }
 
-void monitorLoop(void){
+void setupIO(void){
 
-	  switch(mode) {
-      case 0 :
-      	calcRate();
-      	drawSignal();
-      	break;
-      case 1:
-      	calcRate();
-      	drawRate();
-      	break;
-      default :
-      	calcRate();
-        drawSignal();
-   }
+	//initialize Port E so that bits 7 through 0 of Port E are set as outputs (i.e., the 8 least significant bits)
+  	TRISECLR = 0xff;
+  	//initialize the value to 0 on port E LEDs
+  	PORTECLR = 0xff;
+  	//initialize port D so that bits 11 through 5 of Port D are set as inputs (i.e switches + buttons)
+  	TRISDSET = 0xfe0;
+
+  	//clear interrupt flag for SW4, bit 19 in IFS(0)
+	IFSCLR(0) = (1 << 19);
+	//set up IPC4, bits 28 27 26 (main), 25 24 (sub)
+	IPCSET(4) = (28 << 24);
+	//also enable interrupts from SW4, which is INT4, and INT4IE is bit 19 in IEC0
+	IECSET(0) = (1 << 19);
 
 }
+
+int getbtns(void){
+
+	int btnvals = PORTD;
+	btnvals &= 0xe0;
+	btnvals >>= 5;
+	return btnvals;
+
+}
+
+int getsw( void ){
+
+	int switchvals = PORTD;
+	switchvals &= 0xf00;
+	switchvals >>= 8;
+	return switchvals;
+
+}
+
+void monitorLoop(void){
+
+	switch(mode) {
+   	case 0 :
+    	calcRate();
+    	drawSignal();
+    	break;
+    case 1:
+    	calcRate();
+    	drawRate();
+    	break;
+    default :
+    	calcRate();
+    	drawSignal();
+   }
+
+
+	//poll buttons
+  	int btnvals = getbtns();
+  	if (btnvals > 0){
+	    //go through bit by bit in btnvals
+	    int bit1 = btnvals & 0x1;
+	    int bit2 = btnvals & 0x2;
+	    int bit3 = btnvals & 0x4;
+	    
+	    if (bit1 > 0){
+	    	ewma = 0;
+	    }
+	    else if (bit2 > 0){
+	    	clearScreen();
+	     	mode = 1;
+	    }
+	    else if (bit3 > 0){
+	    	clearScreen();
+	     	mode = 0;
+	    }
+	}
+
+}
+
+
 
 

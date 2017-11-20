@@ -65,6 +65,8 @@ int main(void) {
 	//setupADCManual();
 	setupADCAuto();
 
+	setupIO();
+
 	setupTimer();
 
   	quicksleep(100000);
