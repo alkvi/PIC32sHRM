@@ -7,6 +7,9 @@
 #include <stdint.h>   /* Declarations of uint_32 and the like */
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "projecthead.h"  /* Declatations for these labs */
+#include <string.h>
+#include <stdio.h>
+
 
 /* Declare a helper function which is local to this file */
 static void num32asc( char * s, int ); 

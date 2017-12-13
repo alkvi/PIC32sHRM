@@ -4,6 +4,9 @@ monitor.c.o: monitor.c \
  /Applications/mcb32tools.app/Contents/Resources/Toolchain/include/pic32mx.h \
  /Applications/mcb32tools.app/Contents/Resources/Toolchain/include/math.h \
  /Applications/mcb32tools.app/Contents/Resources/Toolchain/include/machine/ieeefp.h \
+ /Applications/mcb32tools.app/Contents/Resources/Toolchain/include/string.h \
+ /Applications/mcb32tools.app/Contents/Resources/Toolchain/include/klibc/extern.h \
+ /Applications/mcb32tools.app/Contents/Resources/Toolchain/lib/gcc/mipsel-mcb32-elf/4.9.2/include/stddef.h \
  projecthead.h
 monitor.c :
  /Applications/mcb32tools.app/Contents/Resources/Toolchain/include/stdint.h :
@@ -11,4 +14,7 @@ monitor.c :
  /Applications/mcb32tools.app/Contents/Resources/Toolchain/include/pic32mx.h :
  /Applications/mcb32tools.app/Contents/Resources/Toolchain/include/math.h :
  /Applications/mcb32tools.app/Contents/Resources/Toolchain/include/machine/ieeefp.h :
+ /Applications/mcb32tools.app/Contents/Resources/Toolchain/include/string.h :
+ /Applications/mcb32tools.app/Contents/Resources/Toolchain/include/klibc/extern.h :
+ /Applications/mcb32tools.app/Contents/Resources/Toolchain/lib/gcc/mipsel-mcb32-elf/4.9.2/include/stddef.h :
  projecthead.h :

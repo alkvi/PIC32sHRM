@@ -23,3 +23,4 @@ extern const uint8_t const icon[128];
 extern char textbuffer[4][16];
 
 char * itoaconv( int num );
+

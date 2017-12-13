@@ -8,6 +8,7 @@
 #include <stdint.h>   /* Declarations of uint_32 and the like */
 #include <stddef.h>
 #include <math.h>
+#include <string.h>
 #include <pic32mx.h>  /* Declarations of system-specific addresses etc */
 #include "projecthead.h"  /* Declatations for these labs */
 
@@ -70,6 +71,8 @@ void draw_voltage(int x, int val) {
 	int i, j;
 	char * pointy;
 
+	x = 0;
+
 	//invert value since coordinates are flipped
 	val = 1023 - val;
 	val = val / 32;
@@ -124,9 +127,43 @@ void draw_voltage(int x, int val) {
 
 }
 
+//given a 10 bit integer voltage value, draw a straight line on the screen
+void draw_line(int val){
+	int i, j;
+	int x = 0;
 
+	//invert value since coordinates are flipped
+	val = 1023 - val;
+	val = val / 32;
 
+	//figure out which page coordinate should fall in
+	if (val < 8){
+    	i = 0;
+    }
+    else if (val < 16){
+    	i = 1;
+    }
+    else if (val < 24){
+    	i = 2;
+    }
+    else{
+    	i = 3;
+    }
 
+    int yPos = val - i*8;
+    int yCoord = (1 << yPos);
 
+    DISPLAY_CHANGE_TO_COMMAND_MODE;
 
+	spi_send_recv(0x22);
+	spi_send_recv(i);
+		
+	spi_send_recv(x & 0xF);
+	spi_send_recv(0x10 | ((x >> 4) & 0xF));
+		
+	DISPLAY_CHANGE_TO_DATA_MODE;
 
+    for(j = 0; j < SIGAREA; j++)
+		spi_send_recv(yCoord);
+
+}
